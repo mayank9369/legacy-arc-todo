@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My To-Do • Legacy Arc</title>
+  <!-- Link to the stylesheet where all styles live -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top bar with title and controls -->
+  <header class="topbar">
+    <h1 class="app-title">Legacy Arc</h1>
+    <!-- Realtime date/time (updated every second) -->
+    <div id="dateTime" class="date-time" aria-live="polite"></div>
+    <div class="controls">
+      <!-- Link to the calendar page with an accessible SVG icon -->
+      <a class="link" href="calendar.html" title="Open calendar">
+        <svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+        <span class="link-text">Calendar</span>
+      </a>
+      <!-- Button to toggle light/dark theme (icon is set by JS to reflect theme) -->
+      <button id="themeToggle" aria-label="Toggle theme" title="Toggle theme">
+        <svg id="themeIcon" class="icon icon-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Card contains the To-Do list UI -->
+    <section class="card todo-card">
+      <!-- Form to save list title -->
+      <form id="titleForm" class="title-form">
+        <!-- Input for title; explanation: placeholder shows example text -->
+        <input id="listTitle" placeholder="Enter list title (e.g. Daily Study Goals)" />
+        <button type="submit">Save Title</button>
+      </form>
+
+      <!-- Form to add tasks -->
+      <form id="taskForm" class="task-form">
+        <!-- Press Enter or click + to add -->
+        <input id="taskInput" placeholder="Add a task (press Enter or +)" />
+        <button type="submit">+</button>
+      </form>
+
+      <!-- Progress bar shows daily completion percentage -->
+      <div id="progressWrapper" class="progress">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+
+      <!-- Where tasks will be appended as list items -->
+      <ul id="taskList" class="task-list"></ul>
+
+      <div class="meta">
+        <!-- Shows total tasks count -->
+        <small id="taskCount">0 tasks</small>
+        <!-- Motivational quote (optional) -->
+        <div class="quote" id="quote">“Keep going — small steps everyday.”</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small><center>Developed by • SilentRoot</center></small>
+  </footer>
+
+  <!-- All interactive behavior lives in script.js -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Consistency Calendar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="app-title">Consistency</h1>
+    <!-- Realtime date/time (updated every second) -->
+    <div id="dateTime" class="date-time" aria-live="polite"></div>
+    <div class="controls">
+      <a class="link" href="index.html" title="Back to to-do">
+        <svg class="icon icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        <span class="link-text">Back</span>
+      </a>
+      <button id="themeToggleCal" aria-label="Toggle theme" title="Toggle theme">
+        <svg id="themeIconCal" class="icon icon-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container calendar-container">
+    <section class="card calendar-card">
+      <!-- Aggregated stats: total days, current streak, longest streak -->
+      <div class="stats">
+        <div><strong id="daysConsistent">0</strong><br /><small>Days</small></div>
+        <div><strong id="currentStreak">0</strong><br /><small>Current</small></div>
+        <div><strong id="longestStreak">0</strong><br /><small>Longest</small></div>
+      </div>
+
+      <!-- Year grid (3 columns x 4 rows) - JS will populate months and days -->
+      <div id="yearGrid" class="year-grid"></div>
+
+      <!-- Modal: shows tasks for clicked date -->
+      <div id="dateModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="true"></div>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+          <header class="modal-header">
+            <h3 id="modalTitle">Date</h3>
+            <button id="closeModal" aria-label="Close modal" class="modal-close">✕</button>
+          </header>
+          <div id="modalContent" class="modal-content"></div>
+          <footer class="modal-footer"><small class="muted">Click outside or press Esc to close</small></footer>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small><center>Consistency tracker • Based on completed tasks</center></small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
