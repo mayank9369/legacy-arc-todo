@@ -14,7 +14,6 @@
     <div class="controls">
       <a class="link" href="index.html" title="Back to to-do">
         <svg class="icon icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-        <span class="link-text">Back</span>
       </a>
       <button id="themeToggleCal" aria-label="Toggle theme" title="Toggle theme">
         <svg id="themeIconCal" class="icon icon-theme" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
@@ -34,7 +33,10 @@
       <!-- Year grid (3 columns x 4 rows) - JS will populate months and days -->
       <div id="yearGrid" class="year-grid"></div>
 
-      <!-- Modal: shows tasks for clicked date -->
+      <!-- Popover for desktop and modal fallback for small screens -->
+      <div id="datePopover" class="popover" aria-hidden="true"></div>
+
+      <!-- Modal: shows tasks for clicked date (used on small screens) -->
       <div id="dateModal" class="modal" aria-hidden="true">
         <div class="modal-backdrop" data-close="true"></div>
         <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">

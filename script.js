@@ -64,6 +64,14 @@ function startDateTime(){
   dtInterval = setInterval(updateDateTime, 1000);
 }
 
+// shorten the date shown in the nav bar (no seconds, compact)
+function updateDateTime(){
+  const el = document.getElementById('dateTime');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 /* -------- Main To-Do page logic -------- */
 function initTodos(){
   const state = loadState();
@@ -111,13 +119,22 @@ function initTodos(){
   // simple HTML-escape for safety
   function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // events: save title
+  // events: save title (show small toast "Saved")
   titleForm.addEventListener('submit', e => {
     e.preventDefault();
     state.title = listTitle.value.trim();
     saveState(state);
-    alert('List title saved'); // friendly feedback
+    showToast('Saved'); // small non-blocking toast
   });
+
+  // simple toast utility
+  function showToast(message = 'Saved', duration = 1800){
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = message;
+    t.classList.add('visible');
+    setTimeout(()=> t.classList.remove('visible'), duration);
+  }
 
   // add new task
   taskForm.addEventListener('submit', e => {
@@ -257,42 +274,104 @@ function initCalendar(){
     yearGrid.appendChild(monthEl);
   }
 
-  // Make days interactive: open modal on click or Enter/Space
+  // Make days interactive: open popover on click or Enter/Space (popover on wide screens, modal fallback on small)
   if (!calendarListenersInitialized) {
     yearGrid.addEventListener('click', (e) => {
       const day = e.target.closest('.day');
       if (!day || !day.dataset.date || !day.textContent.trim()) return;
-      openDateModal(day.dataset.date);
+      openDatePopup(day.dataset.date, day);
     });
     yearGrid.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         const day = e.target.closest('.day');
         if (!day || !day.dataset.date || !day.textContent.trim()) return;
         e.preventDefault();
-        openDateModal(day.dataset.date);
+        openDatePopup(day.dataset.date, day);
       }
     });
 
+    const pop = document.getElementById('datePopover');
     const modal = document.getElementById('dateModal');
     const modalTitle = document.getElementById('modalTitle');
     const modalContent = document.getElementById('modalContent');
     const closeModalBtn = document.getElementById('closeModal');
     let currentModalDate = null;
 
-    function openDateModal(dateKey){
-      currentModalDate = dateKey;
+    function buildTasksHtml(dateKey){
       const state = loadState();
       const tasks = state.tasks.filter(t => t.createdAt === dateKey || t.completedAt === dateKey);
-      modalTitle.textContent = new Date(dateKey).toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
-      if (!tasks.length) {
-        modalContent.innerHTML = '<p class="muted">No tasks for this day.</p>';
-      } else {
-        modalContent.innerHTML = '<ul class="modal-task-list">' + tasks.map(t => `<li class="modal-task" data-id="${t.id}"><label><input type="checkbox" class="modal-checkbox" data-id="${t.id}" ${t.completed ? 'checked' : ''}> <span class="${t.completed ? 'completed' : ''}">${escapeHtml(t.text)}</span></label> <button class="modal-delete" data-id="${t.id}" aria-label="Delete task">Delete</button></li>`).join('') + '</ul>';
+      if (!tasks.length) return '<p class="muted">No tasks for this day.</p>';
+      return '<ul class="modal-task-list">' + tasks.map(t => `<li class="modal-task" data-id="${t.id}"><label><input type="checkbox" class="modal-checkbox" data-id="${t.id}" ${t.completed ? 'checked' : ''}> <span class="${t.completed ? 'completed' : ''}">${escapeHtml(t.text)}</span></label> <button class="modal-delete" data-id="${t.id}" aria-label="Delete task">Delete</button></li>`).join('') + '</ul>';
+    }
+
+    function openDatePopup(dateKey, anchorEl){
+      // Ensure any existing popover is closed and cleaned up before opening a new one
+      try { closePopup(); } catch(e){}
+      currentModalDate = dateKey;
+
+      // small screens: use modal centered
+      if (window.innerWidth <= 560) {
+        modalTitle.textContent = new Date(dateKey).toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+        modalContent.innerHTML = buildTasksHtml(dateKey);
+        modal.setAttribute('aria-hidden','false');
+        modal.classList.add('open');
+        // focus close button but prevent scrolling
+        try { closeModalBtn?.focus({ preventScroll: true }); } catch(e){}
+        return;
       }
-      modal.setAttribute('aria-hidden','false');
-      modal.classList.add('open');
-      // focus close button for accessibility
-      closeModalBtn?.focus();
+
+      // Desktop: show popover anchored to clicked element
+      // Reset pop state
+      pop.innerHTML = '';
+      pop.classList.remove('flipped');
+      pop.style.visibility = 'hidden';
+      pop.setAttribute('aria-hidden','false');
+
+      pop.innerHTML = `<div class="popover-header"><strong>${new Date(dateKey).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}</strong></div>` + buildTasksHtml(dateKey);
+      pop.classList.add('open');
+
+      // place popover near anchor element
+      const anchorRect = anchorEl.getBoundingClientRect();
+      pop.style.left = '0px'; pop.style.top = '0px'; // reset so size is correct
+      document.body.appendChild(pop);
+      const popRect = pop.getBoundingClientRect();
+      let left = anchorRect.left + window.scrollX;
+      let top = anchorRect.bottom + window.scrollY + 8;
+
+      // adjust right overflow
+      if (left + popRect.width > window.scrollX + window.innerWidth - 12) {
+        left = window.scrollX + window.innerWidth - popRect.width - 12;
+      }
+      // flip above if bottom overflows
+      if (top + popRect.height > window.scrollY + window.innerHeight - 12) {
+        top = anchorRect.top + window.scrollY - popRect.height - 8;
+        pop.classList.add('flipped');
+      } else {
+        pop.classList.remove('flipped');
+      }
+
+      pop.style.left = `${Math.max(8, left)}px`;
+      pop.style.top = `${Math.max(8, top)}px`;
+      pop.style.visibility = 'visible';
+
+      // don't force focus (prevent scrolling), but allow keyboard users to close
+      // add document listeners to close on outside click / Esc
+      setTimeout(()=>{
+        const onDocClick = (ev) => {
+          if (!pop.contains(ev.target) && !anchorEl.contains(ev.target)) closePopup();
+        };
+        const onEsc = (ev) => { if (ev.key === 'Escape') closePopup(); };
+        document.addEventListener('click', onDocClick);
+        document.addEventListener('keydown', onEsc);
+        pop._cleanup = ()=>{ document.removeEventListener('click', onDocClick); document.removeEventListener('keydown', onEsc); };
+      }, 0);
+    }
+
+    function closePopup(){
+      const pop = document.getElementById('datePopover');
+      pop.classList.remove('open');
+      pop.setAttribute('aria-hidden','true');
+      if (pop._cleanup) { pop._cleanup(); delete pop._cleanup; }
     }
 
     function closeModal(){
@@ -306,34 +385,36 @@ function initCalendar(){
       if (e.target.dataset.close === 'true' || e.target.id === 'closeModal') { closeModal(); return; }
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+      if (e.key === 'Escape') { closeModal(); closePopup(); }
     });
 
-    modalContent?.addEventListener('click', (e) => {
-      const id = e.target.dataset.id;
-      if (!id) return;
-      const state = loadState();
-      if (e.target.classList.contains('modal-delete')) {
+    // handle actions inside popover/modal (delegate click)
+    document.addEventListener('click', (e) => {
+      // handle modal buttons
+      if (e.target.classList && e.target.classList.contains('modal-delete')) {
+        const id = e.target.dataset.id;
+        if (!id) return;
+        const state = loadState();
         state.tasks = state.tasks.filter(t => t.id !== id);
         saveState(state);
-        openDateModal(currentModalDate);
-        initCalendar();
-        return;
+        // refresh modals/popovers
+        closePopup(); closeModal(); initCalendar(); return;
       }
-      if (e.target.classList.contains('modal-checkbox')) {
+      if (e.target.classList && e.target.classList.contains('modal-checkbox')) {
+        const id = e.target.dataset.id;
+        if (!id) return;
+        const state = loadState();
         const t = state.tasks.find(t => t.id === id);
         if (!t) return;
         t.completed = e.target.checked;
-        t.completedAt = t.completed ? (todayKey()) : null;
+        t.completedAt = t.completed ? todayKey() : null;
         saveState(state);
-        openDateModal(currentModalDate);
-        initCalendar();
-        return;
+        closePopup(); closeModal(); initCalendar(); return;
       }
     });
 
+    // close modal via close button and backdrop
     closeModalBtn?.addEventListener('click', closeModal);
-    // click backdrop
     modal.querySelector('.modal-backdrop')?.addEventListener('click', closeModal);
 
     calendarListenersInitialized = true;
