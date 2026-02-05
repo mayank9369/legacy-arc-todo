@@ -170,6 +170,11 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 .popover.flipped:after { top: auto; bottom: -6px; transform: rotate(45deg); }
 .popover .modal-task-list { margin-top:6px; }
 
+/* Inline panel inserted into month grid after clicked day. Spans full row. */
+.inline-panel { grid-column: 1 / -1; background: var(--card); padding: 12px; border-radius: 10px; box-shadow: var(--shadow); margin: 6px 0; z-index: 80; }
+.inline-panel .inline-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.inline-panel .modal-task-list { margin-top:6px; }
+
 @media (max-width:560px){
   .modal-card { width: 94%; padding:12px; }
   .popover { display:none; }

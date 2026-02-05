@@ -309,19 +309,19 @@ function initCalendar(){
     yearGrid.appendChild(monthEl);
   }
 
-  // Make days interactive: open popover on click or Enter/Space (popover on wide screens, modal fallback on small)
+  // Make days interactive: open inline panel below clicked day on all devices
   if (!calendarListenersInitialized) {
     yearGrid.addEventListener('click', (e) => {
       const day = e.target.closest('.day');
       if (!day || !day.dataset.date || !day.textContent.trim()) return;
-      openDatePopup(day.dataset.date, day);
+      openInlinePanel(day.dataset.date, day);
     });
     yearGrid.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         const day = e.target.closest('.day');
         if (!day || !day.dataset.date || !day.textContent.trim()) return;
         e.preventDefault();
-        openDatePopup(day.dataset.date, day);
+        openInlinePanel(day.dataset.date, day);
       }
     });
 
@@ -332,6 +332,12 @@ function initCalendar(){
     const closeModalBtn = document.getElementById('closeModal');
     let currentModalDate = null;
 
+    // Inline panel state
+    let currentInline = null;
+    let currentAnchor = null;
+    let inlineClickHandler = null;
+    let inlineEscHandler = null;
+
     function buildTasksHtml(dateKey){
       const state = loadState();
       const tasks = state.tasks.filter(t => t.createdAt === dateKey || t.completedAt === dateKey);
@@ -339,21 +345,52 @@ function initCalendar(){
       return '<ul class="modal-task-list">' + tasks.map(t => `<li class="modal-task" data-id="${t.id}"><label><input type="checkbox" class="modal-checkbox" data-id="${t.id}" ${t.completed ? 'checked' : ''}> <span class="${t.completed ? 'completed' : ''}">${escapeHtml(t.text)}</span></label> <button class="modal-delete" data-id="${t.id}" aria-label="Delete task">Delete</button></li>`).join('') + '</ul>';
     }
 
+    // Inline expansion panel that inserts directly below clicked day (spans whole month row)
+
+    function openInlinePanel(dateKey, anchorEl){
+      // close any previous inline panel
+      closeInlinePanel();
+      currentAnchor = anchorEl;
+
+      // create panel
+      currentInline = document.createElement('div');
+      currentInline.className = 'inline-panel';
+      currentInline.dataset.date = dateKey;
+      currentInline.innerHTML = `<div class="inline-header"><strong>${new Date(dateKey).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}</strong></div>` + buildTasksHtml(dateKey);
+
+      // insert into the grid AFTER the clicked cell
+      const grid = anchorEl.parentElement;
+      const children = Array.from(grid.children);
+      const idx = children.indexOf(anchorEl);
+      if (idx >= 0 && idx < children.length - 1) grid.insertBefore(currentInline, children[idx+1]);
+      else grid.appendChild(currentInline);
+
+      // scroll into view so the panel is visible on smaller screens
+      setTimeout(()=> currentInline.scrollIntoView({behavior:'smooth', block:'center'}), 40);
+
+      // click outside or Esc closes it
+      inlineClickHandler = (ev) => {
+        if (!currentInline.contains(ev.target) && !anchorEl.contains(ev.target)) closeInlinePanel();
+      };
+      inlineEscHandler = (ev) => { if (ev.key === 'Escape') closeInlinePanel(); };
+      document.addEventListener('click', inlineClickHandler);
+      document.addEventListener('keydown', inlineEscHandler);
+    }
+
+    function closeInlinePanel(){
+      if (!currentInline) return;
+      currentInline.remove();
+      currentInline = null;
+      currentAnchor = null;
+      if (inlineClickHandler) { document.removeEventListener('click', inlineClickHandler); inlineClickHandler = null; }
+      if (inlineEscHandler) { document.removeEventListener('keydown', inlineEscHandler); inlineEscHandler = null; }
+    }
+
+    // Keep popover code for desktop hover fallback (not used by default)
     function openDatePopup(dateKey, anchorEl){
       // Ensure any existing popover is closed and cleaned up before opening a new one
       try { closePopup(); } catch(e){}
       currentModalDate = dateKey;
-
-      // small screens: use modal centered
-      if (window.innerWidth <= 560) {
-        modalTitle.textContent = new Date(dateKey).toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
-        modalContent.innerHTML = buildTasksHtml(dateKey);
-        modal.setAttribute('aria-hidden','false');
-        modal.classList.add('open');
-        // focus close button but prevent scrolling
-        try { closeModalBtn?.focus({ preventScroll: true }); } catch(e){}
-        return;
-      }
 
       // Desktop: show popover anchored to clicked element
       // Reset pop state
@@ -408,7 +445,6 @@ function initCalendar(){
       pop.setAttribute('aria-hidden','true');
       if (pop._cleanup) { pop._cleanup(); delete pop._cleanup; }
     }
-
     function closeModal(){
       modal.setAttribute('aria-hidden','true');
       modal.classList.remove('open');
