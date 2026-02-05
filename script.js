@@ -119,21 +119,56 @@ function initTodos(){
   // simple HTML-escape for safety
   function escapeHtml(s){ return (s+'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // events: save title (show small toast "Saved")
+  // events: save title (show small toast "Saved"); hide save button until input changes
+  const titleSaveBtn = titleForm.querySelector('button[type="submit"]');
+  let toastTimer = null;
+
   titleForm.addEventListener('submit', e => {
     e.preventDefault();
+    e.stopPropagation();
+
     state.title = listTitle.value.trim();
     saveState(state);
-    showToast('Saved'); // small non-blocking toast
+
+    // show toast at top center
+    showToast('Saved');
+
+    // hide the save button from view until input changes
+    if (titleSaveBtn) {
+      titleSaveBtn.style.display = 'none';
+      titleSaveBtn.setAttribute('aria-hidden','true');
+    }
   });
 
-  // simple toast utility
-  function showToast(message = 'Saved', duration = 1800){
+  // show save button again when user edits the title (and the value differs from saved state)
+  listTitle.addEventListener('input', () => {
+    const current = listTitle.value.trim();
+    if (!titleSaveBtn) return;
+    if (current !== state.title) {
+      titleSaveBtn.style.display = '';
+      titleSaveBtn.removeAttribute('aria-hidden');
+      titleSaveBtn.disabled = false;
+    } else {
+      titleSaveBtn.style.display = 'none';
+      titleSaveBtn.setAttribute('aria-hidden','true');
+    }
+  });
+
+  // simple toast utility — ensures single toast shown and ARIA live is updated
+  function showToast(message = 'Saved', duration = 1400){
     const t = document.getElementById('toast');
     if (!t) return;
+    // clear any existing timer
+    if (toastTimer) clearTimeout(toastTimer);
     t.textContent = message;
     t.classList.add('visible');
-    setTimeout(()=> t.classList.remove('visible'), duration);
+    // update aria-live politely
+    t.setAttribute('aria-hidden','false');
+    toastTimer = setTimeout(()=>{
+      t.classList.remove('visible');
+      t.setAttribute('aria-hidden','true');
+      toastTimer = null;
+    }, duration);
   }
 
   // add new task
