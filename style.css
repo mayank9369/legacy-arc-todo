@@ -125,15 +125,25 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 /* meta footer */
 .meta{ display:flex; justify-content:space-between; align-items:center; margin-top:14px; color:var(--muted); font-size:0.9rem; }
 
-/* progress bar */
-.progress{ width:100%; height:10px; background: linear-gradient(90deg, rgba(16,24,40,0.04), rgba(16,24,40,0.02)); border-radius:999px; overflow:hidden; margin:10px 0; box-shadow: inset 0 -3px 8px rgba(16,24,40,0.03); }
-.progress-bar{ height:100%; width:0%; background: linear-gradient(90deg,var(--accent),var(--accent-2)); transition:width .5s cubic-bezier(.2,.8,.2,1); box-shadow: 0 6px 20px rgba(37,99,235,0.08); }
+/* Modern progress bar with percentage and animations */
+.progress-wrapper { width:100%; margin:18px 0; }
+.progress-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:16px; }
+.progress-left { display:flex; align-items:center; gap:12px; flex:1; }
+.progress-label { font-size:0.85rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.6px; }
+.progress-counter { font-size:0.9rem; font-weight:600; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.progress-percent { font-size:1.3rem; font-weight:800; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-0.5px; animation: percentPulse 2s ease-in-out infinite; }
 
-/* subtle animated sheen */
-@keyframes sheen { 0%{ background-position:0% } 100%{ background-position:200% } }
-.progress-bar { background-size: 200% 100%; }
+.progress-container { position:relative; width:100%; height:20px; background: linear-gradient(90deg, rgba(16,24,40,0.08), rgba(16,24,40,0.04)); border-radius:999px; overflow:hidden; box-shadow: inset 0 2px 8px rgba(16,24,40,0.06), 0 1px 3px rgba(16,24,40,0.03); border:1px solid rgba(37,99,235,0.08); }
+.progress-track { position:absolute; inset:0; background: linear-gradient(90deg, rgba(37,99,235,0.04), rgba(6,182,212,0.03)); border-radius:999px; }
+.progress-bar { position:relative; height:100%; width:0%; background: linear-gradient(90deg, #2563eb, #06b6d4, #10b981); transition:width .7s cubic-bezier(.25,.46,.45,.94); box-shadow: 0 0 20px rgba(37,99,235,0.3), inset 0 1px 2px rgba(255,255,255,0.1); border-radius:999px; }
+.progress-bar.complete { animation: completeGlow 1.2s cubic-bezier(.6,.04,.98,.34); }
+.progress-bar-inner { position:absolute; inset:0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); border-radius:999px; animation: innerShine 2.5s infinite; }
+.progress-shine { position:absolute; top:0; left:0; height:100%; width:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); border-radius:999px; pointer-events:none; animation: shimmer 3.5s infinite; }
 
-.progress-percent { text-align:right; font-size:0.8rem; color:var(--muted); margin-top:6px; }
+@keyframes shimmer { 0%,100%{ opacity:0; } 50%{ opacity:1; } }
+@keyframes innerShine { 0%{ transform:translateX(-100%); } 100%{ transform:translateX(100%); } }
+@keyframes percentPulse { 0%,100%{ opacity:0.8; } 50%{ opacity:1; transform:scale(1.05); } }
+@keyframes completeGlow { 0%{ box-shadow: 0 0 20px rgba(37,99,235,0.3), inset 0 1px 2px rgba(255,255,255,0.1); } 50%{ box-shadow: 0 0 40px rgba(16,185,129,0.5), inset 0 1px 2px rgba(255,255,255,0.2); } 100%{ box-shadow: 0 0 20px rgba(16,185,129,0.3), inset 0 1px 2px rgba(255,255,255,0.1); } }
 
 
 /* calendar styles */
@@ -181,26 +191,28 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 .inline-overlay .close-overlay { background:transparent; border:none; font-size:1.0rem; cursor:pointer; color:var(--muted); }
 .inline-overlay .modal-task-list { margin-top:6px; }
 
-/* Save Day button */
-.save-day-btn { width:100%; padding:14px 18px; margin-top:12px; border:none; border-radius:10px; background: linear-gradient(90deg, var(--success), #34d399); color:white; font-size:0.95rem; font-weight:600; cursor:pointer; box-shadow: 0 6px 16px rgba(16,185,129,0.12); transition: all .18s ease; }
-.save-day-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(16,185,129,0.18); }
-.save-day-btn:active { transform: translateY(-1px); }
+/* Save Day button - compact size */
+.save-day-btn { padding:10px 16px; margin-top:12px; border:none; border-radius:8px; background: linear-gradient(135deg, var(--success), #059669); color:white; font-size:0.85rem; font-weight:600; cursor:pointer; box-shadow: 0 4px 12px rgba(16,185,129,0.15); transition: all .2s ease; display:inline-block; }
+.save-day-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 16px rgba(16,185,129,0.2); }
+.save-day-btn:active { transform: translateY(0) scale(0.98); }
 
-/* Celebration Modal */
+/* Enhanced Celebration Modal - Compact & Attractive */
 .celebration-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:300; }
-.celebration-modal.display { display:flex; }
-.celebration-modal::before { content:''; position:absolute; inset:0; background:rgba(2,6,23,0.55); backdrop-filter:blur(3px); }
-.celebration-card { position:relative; background:var(--card); border-radius:16px; padding:40px 28px; width:min(420px, 90%); box-shadow:0 20px 50px rgba(16,24,40,0.2); text-align:center; z-index:301; animation: celebrationBounce .6s cubic-bezier(.34,1.56,.64,1); }
-.celebration-content h2 { font-size:1.8rem; margin-bottom:12px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.celebration-content p { color:var(--muted); font-size:1rem; margin-bottom:28px; }
-.celebration-emoji { font-size:4rem; margin-bottom:16px; display:inline-block; animation: celebrationSpin 1.2s cubic-bezier(.68,-.55,.265,1.55) both; }
-.btn-primary { padding:12px 24px; border:none; border-radius:10px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:white; font-weight:600; font-size:0.95rem; cursor:pointer; box-shadow: 0 6px 16px rgba(37,99,235,0.12); }
-.btn-primary:hover { transform:translateY(-2px); box-shadow: 0 10px 24px rgba(37,99,235,0.18); }
+.celebration-modal.display { display:flex; animation: backdropFade .4s ease-out; }
+.celebration-modal::before { content:''; position:absolute; inset:0; background:rgba(2,6,23,0.6); backdrop-filter:blur(5px); animation: backdropBlur .5s ease-out; }
+.celebration-card { position:relative; background:var(--card); border-radius:18px; padding:32px 26px; width:min(380px, 92%); box-shadow: 0 25px 60px rgba(16,24,40,0.3), 0 0 40px rgba(37,99,235,0.15); text-align:center; z-index:301; animation: celebrationBounceEnhanced .7s cubic-bezier(.34,1.56,.64,1); border:1px solid rgba(37,99,235,0.1); }
+.celebration-content h2 { font-size:1.4rem; margin-bottom:8px; background: linear-gradient(135deg, var(--accent), var(--accent-2), #10b981); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; font-weight:800; letter-spacing:-0.3px; }
+.celebration-content p { color:var(--muted); font-size:0.9rem; margin-bottom:20px; line-height:1.5; }
+.celebration-emoji { font-size:3.5rem; margin-bottom:12px; display:inline-block; animation: emojiPop 1.3s cubic-bezier(.68,-.55,.265,1.55) both; }
+.btn-primary { padding:10px 20px; border:none; border-radius:9px; background:linear-gradient(135deg, var(--accent), var(--accent-2)); color:white; font-weight:600; font-size:0.85rem; cursor:pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.18); transition: all .25s ease; }
+.btn-primary:hover { transform:translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.25); }
 .btn-primary:active { transform:translateY(0); }
 
-/* Celebration animations */
-@keyframes celebrationBounce { 0%{ transform:scale(.85) translateY(-40px); opacity:0; } 50%{ transform:scale(1.05); } 100%{ transform:scale(1) translateY(0); opacity:1; } }
-@keyframes celebrationSpin { 0%{ transform:rotate(0deg) scale(.8); opacity:0; } 50%{ transform:rotate(180deg); } 100%{ transform:rotate(360deg) scale(1); opacity:1; } }
+/* Enhanced celebration animations */
+@keyframes backdropFade { from{ opacity:0; } to{ opacity:1; } }
+@keyframes backdropBlur { from{ backdrop-filter:blur(0); } to{ backdrop-filter:blur(5px); } }
+@keyframes celebrationBounceEnhanced { 0%{ transform:scale(0.7) translateY(-50px) rotateX(-20deg); opacity:0; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1) translateY(0) rotateX(0); opacity:1; } }
+@keyframes emojiPop { 0%{ transform:scale(0) rotate(-180deg); opacity:0; } 60%{ transform:scale(1.15) rotate(10deg); } 100%{ transform:scale(1) rotate(0); opacity:1; } }
 
 @media (max-width:560px){
   .modal-card { width: 94%; padding:12px; }

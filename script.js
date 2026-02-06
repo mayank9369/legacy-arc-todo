@@ -125,10 +125,22 @@ function initTodos(){
     });
     taskCount.textContent = `${tasks.length} task${tasks.length !== 1 ? 's' : ''}`;
 
-    // progress bar: percentage of today's tasks completed
+    // progress bar: percentage of today's tasks completed with percentage display and counter
     const completed = tasks.filter(t => t.completed).length;
     const pct = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
     progressBar.style.width = pct + '%';
+    
+    // update percentage text and counter
+    const progressPercent = document.getElementById('progressPercent');
+    const progressCounter = document.getElementById('progressCounter');
+    if (progressPercent) progressPercent.textContent = pct + '%';
+    if (progressCounter) progressCounter.textContent = `${completed}/${tasks.length}`;
+
+    // add celebration animation when progress reaches 100%
+    if (pct === 100 && tasks.length > 0) {
+      progressBar.classList.add('complete');
+      setTimeout(() => progressBar.classList.remove('complete'), 1200);
+    }
 
     // show "Save Day" button if all tasks are completed and there is at least one task
     const saveDayBtn = document.getElementById('saveDayBtn');

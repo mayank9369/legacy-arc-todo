@@ -46,8 +46,21 @@
       </form>
 
       <!-- Progress bar shows daily completion percentage -->
-      <div id="progressWrapper" class="progress">
-        <div id="progressBar" class="progress-bar"></div>
+      <div id="progressWrapper" class="progress-wrapper">
+        <div class="progress-header">
+          <div class="progress-left">
+            <span class="progress-label">Daily Progress</span>
+            <span class="progress-counter" id="progressCounter">0/0</span>
+          </div>
+          <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-track"></div>
+          <div id="progressBar" class="progress-bar">
+            <div class="progress-bar-inner"></div>
+          </div>
+          <div class="progress-shine"></div>
+        </div>
       </div>
 
       <!-- Where tasks will be appended as list items -->
