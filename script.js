@@ -28,8 +28,8 @@ function formatLocalDate(date){
 }
 function loadState(){
   const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return { title: '', tasks: [], theme: 'light' };
-  try { return JSON.parse(raw); } catch { return { title:'', tasks:[], theme:'light'}; }
+  if (!raw) return { appTitle: 'Legacy Arc', title: '', tasks: [], theme: 'light' };
+  try { return JSON.parse(raw); } catch { return { appTitle: 'Legacy Arc', title:'', tasks:[], theme:'light'}; }
 }
 function saveState(state){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -106,7 +106,7 @@ function initTodos(){
 
   // load saved title
   listTitle.value = state.title || '';
-  if (appTitle) appTitle.textContent = state.title || 'Legacy Arc';
+  if (appTitle) appTitle.textContent = state.appTitle || 'Legacy Arc';
 
   function render(){
     // clear list and only show tasks created for today (daily tasks reset at midnight)
@@ -285,7 +285,7 @@ function initTodos(){
     if (!appTitle) return;
     
     appTitle.addEventListener('click', () => {
-      const currentTitle = state.title || 'Legacy Arc';
+      const currentTitle = state.appTitle || 'Legacy Arc';
       const input = document.createElement('input');
       input.type = 'text';
       input.value = currentTitle;
@@ -298,7 +298,7 @@ function initTodos(){
 
       const saveTitle = () => {
         const newTitle = input.value.trim() || 'Legacy Arc';
-        state.title = newTitle;
+        state.appTitle = newTitle;
         saveState(state);
         
         const newTitle_elem = document.createElement('h1');
@@ -308,8 +308,7 @@ function initTodos(){
         newTitle_elem.textContent = newTitle;
         input.replaceWith(newTitle_elem);
         
-        listTitle.value = newTitle;
-        showToast('Title updated');
+        showToast('App title updated');
         setupAppTitleEditor();
       };
 
@@ -321,7 +320,7 @@ function initTodos(){
           restoredTitle.className = 'app-title';
           restoredTitle.id = 'appTitle';
           restoredTitle.title = 'Click to edit title';
-          restoredTitle.textContent = state.title || 'Legacy Arc';
+          restoredTitle.textContent = state.appTitle || 'Legacy Arc';
           input.replaceWith(restoredTitle);
           setupAppTitleEditor();
         }
