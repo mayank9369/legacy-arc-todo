@@ -129,6 +129,14 @@ function initTodos(){
     const completed = tasks.filter(t => t.completed).length;
     const pct = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
     progressBar.style.width = pct + '%';
+
+    // show "Save Day" button if all tasks are completed and there is at least one task
+    const saveDayBtn = document.getElementById('saveDayBtn');
+    if (saveDayBtn && tasks.length > 0 && completed === tasks.length) {
+      saveDayBtn.style.display = '';
+    } else if (saveDayBtn) {
+      saveDayBtn.style.display = 'none';
+    }
   }
 
   // schedule a refresh at local midnight so today's list clears automatically
@@ -259,6 +267,47 @@ function initTodos(){
 
   // Apply theme from saved state
   applyTheme(state.theme || 'light');
+
+  // Save Day button: mark all today's tasks as completed and show celebration
+  const saveDayBtn = document.getElementById('saveDayBtn');
+  const celebrationModal = document.getElementById('celebrationModal');
+  const celebrationClose = document.getElementById('celebrationClose');
+
+  if (saveDayBtn) {
+    saveDayBtn.addEventListener('click', () => {
+      const todaysTasks = state.tasks.filter(t => t.createdAt === todayKey());
+      todaysTasks.forEach(t => {
+        if (!t.completed) {
+          t.completed = true;
+          t.completedAt = todayKey();
+        }
+      });
+      saveState(state);
+      render();
+      // Show celebration modal
+      if (celebrationModal) {
+        celebrationModal.setAttribute('aria-hidden', 'false');
+        celebrationModal.classList.add('display');
+      }
+    });
+  }
+
+  if (celebrationClose) {
+    celebrationClose.addEventListener('click', () => {
+      if (celebrationModal) {
+        celebrationModal.classList.remove('display');
+        celebrationModal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  // Close celebration on Esc key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && celebrationModal && celebrationModal.classList.contains('display')) {
+      celebrationModal.classList.remove('display');
+      celebrationModal.setAttribute('aria-hidden', 'true');
+    }
+  });
   
   // Daily quote selection: pick a quote based on the local date so it changes each day
   try {

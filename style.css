@@ -181,9 +181,33 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 .inline-overlay .close-overlay { background:transparent; border:none; font-size:1.0rem; cursor:pointer; color:var(--muted); }
 .inline-overlay .modal-task-list { margin-top:6px; }
 
+/* Save Day button */
+.save-day-btn { width:100%; padding:14px 18px; margin-top:12px; border:none; border-radius:10px; background: linear-gradient(90deg, var(--success), #34d399); color:white; font-size:0.95rem; font-weight:600; cursor:pointer; box-shadow: 0 6px 16px rgba(16,185,129,0.12); transition: all .18s ease; }
+.save-day-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(16,185,129,0.18); }
+.save-day-btn:active { transform: translateY(-1px); }
+
+/* Celebration Modal */
+.celebration-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:300; }
+.celebration-modal.display { display:flex; }
+.celebration-modal::before { content:''; position:absolute; inset:0; background:rgba(2,6,23,0.55); backdrop-filter:blur(3px); }
+.celebration-card { position:relative; background:var(--card); border-radius:16px; padding:40px 28px; width:min(420px, 90%); box-shadow:0 20px 50px rgba(16,24,40,0.2); text-align:center; z-index:301; animation: celebrationBounce .6s cubic-bezier(.34,1.56,.64,1); }
+.celebration-content h2 { font-size:1.8rem; margin-bottom:12px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.celebration-content p { color:var(--muted); font-size:1rem; margin-bottom:28px; }
+.celebration-emoji { font-size:4rem; margin-bottom:16px; display:inline-block; animation: celebrationSpin 1.2s cubic-bezier(.68,-.55,.265,1.55) both; }
+.btn-primary { padding:12px 24px; border:none; border-radius:10px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:white; font-weight:600; font-size:0.95rem; cursor:pointer; box-shadow: 0 6px 16px rgba(37,99,235,0.12); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow: 0 10px 24px rgba(37,99,235,0.18); }
+.btn-primary:active { transform:translateY(0); }
+
+/* Celebration animations */
+@keyframes celebrationBounce { 0%{ transform:scale(.85) translateY(-40px); opacity:0; } 50%{ transform:scale(1.05); } 100%{ transform:scale(1) translateY(0); opacity:1; } }
+@keyframes celebrationSpin { 0%{ transform:rotate(0deg) scale(.8); opacity:0; } 50%{ transform:rotate(180deg); } 100%{ transform:rotate(360deg) scale(1); opacity:1; } }
+
 @media (max-width:560px){
   .modal-card { width: 94%; padding:12px; }
   .popover { display:none; }
+  .celebration-card { padding:32px 20px; }
+  .celebration-emoji { font-size:3.2rem; }
+  .celebration-content h2 { font-size:1.5rem; }
 }
 
 /* responsiveness */

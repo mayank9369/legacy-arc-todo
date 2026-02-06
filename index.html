@@ -52,7 +52,10 @@
 
       <!-- Where tasks will be appended as list items -->
       <ul id="taskList" class="task-list"></ul>
-
+      <!-- Save Day button (shown when all tasks completed) -->
+      <button id="saveDayBtn" class="save-day-btn" style="display:none;">
+        🎉 Save Day & Celebrate
+      </button>
       <div class="meta">
         <!-- Shows total tasks count -->
         <small id="taskCount">0 tasks</small>
@@ -61,6 +64,18 @@
       </div>
     </section>
   </main>
+
+  <!-- Celebration Modal -->
+  <div id="celebrationModal" class="celebration-modal" aria-hidden="true">
+    <div class="celebration-card">
+      <div class="celebration-content">
+        <div class="celebration-emoji">🎉</div>
+        <h2>Amazing! Day Complete!</h2>
+        <p>You crushed all your tasks today. Keep the momentum going!</p>
+        <button id="celebrationClose" class="btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer">
     <small><center>Developed by • SilentRoot</center></small>
