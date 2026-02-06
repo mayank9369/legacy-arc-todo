@@ -266,7 +266,7 @@ function initTodos(){
       const t = state.tasks.find(t => t.id === id);
       if (!t) return;
       t.completed = !t.completed;
-      t.completedAt = t.completed ? todayKey() : null;
+      // Don't set completedAt here - only set it when Save Day button is clicked
       saveState(state);
       render();
       return;
@@ -289,8 +289,8 @@ function initTodos(){
     saveDayBtn.addEventListener('click', () => {
       const todaysTasks = state.tasks.filter(t => t.createdAt === todayKey());
       todaysTasks.forEach(t => {
-        if (!t.completed) {
-          t.completed = true;
+        if (t.completed) {
+          // Only set completedAt when Save Day button is clicked
           t.completedAt = todayKey();
         }
       });
@@ -619,7 +619,10 @@ function initCalendar(){
           // Attribute completion to the date currently being viewed (overlay or modal)
           const viewDate = (typeof currentInline !== 'undefined' && currentInline && currentInline.dataset && currentInline.dataset.date)
                             || currentModalDate || todayKey();
-          t.completedAt = t.completed ? viewDate : null;
+          // Only set completedAt for past dates; for today, it will be set by Save Day button
+          if (viewDate !== todayKey()) {
+            t.completedAt = t.completed ? viewDate : null;
+          }
         saveState(state);
         closePopup(); closeModal(); initCalendar(); return;
       }
