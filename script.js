@@ -111,9 +111,6 @@ function initTodos(){
     const completed = tasks.filter(t => t.completed).length;
     const pct = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
     progressBar.style.width = pct + '%';
-
-    // Example motivational quote (could randomize)
-    quoteEl.textContent = '“Small steps every day add up to big wins.”';
   }
 
   // simple HTML-escape for safety
@@ -122,6 +119,18 @@ function initTodos(){
   // events: save title (show small toast "Saved"); hide save button until input changes
   const titleSaveBtn = titleForm.querySelector('button[type="submit"]');
   let toastTimer = null;
+  
+  // initial visibility of the Save Title button: hide if the loaded value equals saved state
+  if (titleSaveBtn) {
+    const current = (listTitle.value || '').trim();
+    if (current !== (state.title || '')) {
+      titleSaveBtn.style.display = '';
+      titleSaveBtn.removeAttribute('aria-hidden');
+    } else {
+      titleSaveBtn.style.display = 'none';
+      titleSaveBtn.setAttribute('aria-hidden','true');
+    }
+  }
 
   titleForm.addEventListener('submit', e => {
     e.preventDefault();
@@ -218,6 +227,25 @@ function initTodos(){
 
   // Apply theme from saved state
   applyTheme(state.theme || 'light');
+  
+  // Ensure the motivational quote is chosen once per session (so it doesn't change on every render)
+  try {
+    if (quoteEl) {
+      const quotes = [
+        '“Small steps every day add up to big wins.”',
+        '“Progress, not perfection.”',
+        '“Consistency is the key to success.”',
+        '“Do something today that your future self will thank you for.”',
+        '“Start where you are. Use what you have. Do what you can.”'
+      ];
+      let sel = sessionStorage.getItem('todoQuote');
+      if (!sel) {
+        sel = quotes[Math.floor(Math.random() * quotes.length)];
+        sessionStorage.setItem('todoQuote', sel);
+      }
+      quoteEl.textContent = sel;
+    }
+  } catch (e) { /* ignore sessionStorage errors */ }
 
   // initial render
   render();
