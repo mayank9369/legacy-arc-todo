@@ -12,8 +12,19 @@ const STORAGE_KEY = 'todoApp';
 
 /* -------- Utility helpers -------- */
 function todayKey(date = new Date()){
-  // Return YYYY-MM-DD string for easy comparisons
-  return date.toISOString().slice(0,10);
+  // Return local YYYY-MM-DD string for easy comparisons (avoid UTC shift)
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function formatLocalDate(date){
+  const dt = (date instanceof Date) ? date : new Date(date);
+  if (isNaN(dt)) return null;
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const d = String(dt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 function loadState(){
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -75,6 +86,13 @@ function updateDateTime(){
 /* -------- Main To-Do page logic -------- */
 function initTodos(){
   const state = loadState();
+  // Normalize any older ISO date strings in tasks to local YYYY-MM-DD
+  try {
+    (state.tasks || []).forEach(t => {
+      if (t.createdAt && t.createdAt.includes('T')) t.createdAt = formatLocalDate(new Date(t.createdAt));
+      if (t.completedAt && t.completedAt.includes('T')) t.completedAt = formatLocalDate(new Date(t.completedAt));
+    });
+  } catch(e){}
   // Elements
   const listTitle = document.getElementById('listTitle');
   const titleForm = document.getElementById('titleForm');
@@ -89,9 +107,9 @@ function initTodos(){
   listTitle.value = state.title || '';
 
   function render(){
-    // clear list
+    // clear list and only show tasks created for today (daily tasks reset at midnight)
     taskList.innerHTML = '';
-    const tasks = state.tasks || [];
+    const tasks = (state.tasks || []).filter(t => t.createdAt === todayKey());
     // create DOM items
     tasks.forEach(task => {
       const li = document.createElement('li');
@@ -107,10 +125,24 @@ function initTodos(){
     });
     taskCount.textContent = `${tasks.length} task${tasks.length !== 1 ? 's' : ''}`;
 
-    // progress bar: percentage of tasks completed
+    // progress bar: percentage of today's tasks completed
     const completed = tasks.filter(t => t.completed).length;
     const pct = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
     progressBar.style.width = pct + '%';
+  }
+
+  // schedule a refresh at local midnight so today's list clears automatically
+  function scheduleMidnightRefresh(){
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const ms = tomorrow.getTime() - now.getTime() + 50; // a small offset
+    setTimeout(()=>{
+      // re-render so tasks not from today disappear after 11:59:59
+      render();
+      // also re-run calendar to update stats if user is on calendar page
+      if (document.getElementById('yearGrid')) initCalendar();
+      scheduleMidnightRefresh();
+    }, ms);
   }
 
   // simple HTML-escape for safety
@@ -249,6 +281,9 @@ function initTodos(){
 
   // initial render
   render();
+
+  // start midnight refresh to clear today's tasks automatically
+  scheduleMidnightRefresh();
 }
 
 /* -------- Calendar page logic -------- */
@@ -270,7 +305,8 @@ function initCalendar(){
   const year = new Date().getFullYear();
   // helper to check if a date exists in doneDates
   function isDone(dateObj){
-    return doneDates.has(dateObj.toISOString().slice(0,10));
+    const k = formatLocalDate(dateObj);
+    return doneDates.has(k);
   }
 
   // current streak (including today if done)
@@ -320,7 +356,7 @@ function initCalendar(){
       const dateObj = new Date(year, m, d);
       const dayEl = document.createElement('div');
       dayEl.className = 'day';
-      const key = dateObj.toISOString().slice(0,10);
+      const key = formatLocalDate(dateObj);
       if (doneDates.has(key)) {
         dayEl.classList.add('done');
       }
@@ -375,26 +411,37 @@ function initCalendar(){
 
     // Inline expansion panel that inserts directly below clicked day (spans whole month row)
 
+    // overlay panel that sits above the calendar (doesn't reflow the grid)
     function openInlinePanel(dateKey, anchorEl){
-      // close any previous inline panel
+      // close any previous overlay
       closeInlinePanel();
-      currentAnchor = anchorEl;
 
-      // create panel
+      // create overlay anchored near the clicked day but absolutely positioned over the calendar
       currentInline = document.createElement('div');
-      currentInline.className = 'inline-panel';
+      currentInline.className = 'inline-overlay';
       currentInline.dataset.date = dateKey;
-      currentInline.innerHTML = `<div class="inline-header"><strong>${new Date(dateKey).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' })}</strong></div>` + buildTasksHtml(dateKey);
+      const headerLabel = new Date(dateKey).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+      currentInline.innerHTML = `<div class="inline-header"><strong>${headerLabel}</strong><button class="close-overlay" aria-label="Close">✕</button></div>` + buildTasksHtml(dateKey);
 
-      // insert into the grid AFTER the clicked cell
-      const grid = anchorEl.parentElement;
-      const children = Array.from(grid.children);
-      const idx = children.indexOf(anchorEl);
-      if (idx >= 0 && idx < children.length - 1) grid.insertBefore(currentInline, children[idx+1]);
-      else grid.appendChild(currentInline);
+      document.body.appendChild(currentInline);
 
-      // scroll into view so the panel is visible on smaller screens
-      setTimeout(()=> currentInline.scrollIntoView({behavior:'smooth', block:'center'}), 40);
+      // Position the overlay near the anchor if possible
+      try {
+        const anchorRect = anchorEl.getBoundingClientRect();
+        const top = Math.max(12, anchorRect.top + window.scrollY - 8);
+        currentInline.style.left = '8px';
+        currentInline.style.right = '8px';
+        currentInline.style.top = `${top}px`;
+      } catch (e) {
+        // fallback center-top
+        currentInline.style.left = '8px';
+        currentInline.style.right = '8px';
+        currentInline.style.top = '80px';
+      }
+
+      // focus management
+      const closeBtn = currentInline.querySelector('.close-overlay');
+      closeBtn?.addEventListener('click', closeInlinePanel);
 
       // click outside or Esc closes it
       inlineClickHandler = (ev) => {

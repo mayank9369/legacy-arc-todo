@@ -175,6 +175,12 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 .inline-panel .inline-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
 .inline-panel .modal-task-list { margin-top:6px; }
 
+/* Overlay that sits above the calendar without reflow */
+.inline-overlay { position: absolute; z-index: 220; background: var(--card); border-radius: 10px; padding: 12px; box-shadow: var(--shadow); min-width:280px; max-width: calc(100% - 24px); left: 12px; right: 12px; }
+.inline-overlay .inline-header { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.inline-overlay .close-overlay { background:transparent; border:none; font-size:1.0rem; cursor:pointer; color:var(--muted); }
+.inline-overlay .modal-task-list { margin-top:6px; }
+
 @media (max-width:560px){
   .modal-card { width: 94%; padding:12px; }
   .popover { display:none; }
