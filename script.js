@@ -260,7 +260,7 @@ function initTodos(){
   // Apply theme from saved state
   applyTheme(state.theme || 'light');
   
-  // Ensure the motivational quote is chosen once per session (so it doesn't change on every render)
+  // Daily quote selection: pick a quote based on the local date so it changes each day
   try {
     if (quoteEl) {
       const quotes = [
@@ -270,14 +270,16 @@ function initTodos(){
         '“Do something today that your future self will thank you for.”',
         '“Start where you are. Use what you have. Do what you can.”'
       ];
-      let sel = sessionStorage.getItem('todoQuote');
-      if (!sel) {
-        sel = quotes[Math.floor(Math.random() * quotes.length)];
-        sessionStorage.setItem('todoQuote', sel);
+      function getDailyQuote(){
+        const d = new Date();
+        const key = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+        // simple deterministic index from date string
+        let sum = 0; for (let i=0;i<key.length;i++) sum += key.charCodeAt(i);
+        return quotes[sum % quotes.length];
       }
-      quoteEl.textContent = sel;
+      quoteEl.textContent = getDailyQuote();
     }
-  } catch (e) { /* ignore sessionStorage errors */ }
+  } catch (e) { /* ignore errors */ }
 
   // initial render
   render();
@@ -552,8 +554,11 @@ function initCalendar(){
         const state = loadState();
         const t = state.tasks.find(t => t.id === id);
         if (!t) return;
-        t.completed = e.target.checked;
-        t.completedAt = t.completed ? todayKey() : null;
+          t.completed = e.target.checked;
+          // Attribute completion to the date currently being viewed (overlay or modal)
+          const viewDate = (typeof currentInline !== 'undefined' && currentInline && currentInline.dataset && currentInline.dataset.date)
+                            || currentModalDate || todayKey();
+          t.completedAt = t.completed ? viewDate : null;
         saveState(state);
         closePopup(); closeModal(); initCalendar(); return;
       }
