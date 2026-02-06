@@ -52,7 +52,8 @@ main { flex:1; }
   display:flex; justify-content:space-between; align-items:center;
   padding: 18px 22px; background: transparent;
 }
-.app-title{ font-size: 1.2rem; letter-spacing:0.6px; }
+.app-title{ font-size: 1.2rem; letter-spacing:0.6px; cursor:pointer; padding:6px 10px; border-radius:8px; transition:all .2s ease; }
+.app-title:hover{ background:rgba(0,255,136,0.1); color:#00ffff; }
 .controls { display:flex; gap:8px; align-items:center; }
 .date-time { color:var(--muted); font-size:0.9rem; margin-left:12px; }
 .icon { width:20px; height:20px; display:inline-block; vertical-align:middle; color:var(--accent); }
@@ -131,8 +132,8 @@ button:active, .title-form button:active, .task-form button:active { transform: 
 .progress-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:16px; }
 .progress-left { display:flex; align-items:center; gap:12px; flex:1; }
 .progress-label { font-size:0.75rem; font-weight:700; color:var(--text); text-transform:uppercase; letter-spacing:0.6px; }
-.progress-counter { font-size:0.8rem; font-weight:600; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.progress-percent { font-size:1rem; font-weight:800; background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-0.5px; animation: percentPulse 2s ease-in-out infinite; }
+.progress-counter { font-size:0.8rem; font-weight:600; color:white; }
+.progress-percent { font-size:1rem; font-weight:800; color:white; letter-spacing:-0.5px; animation: percentPulse 2s ease-in-out infinite; }
 
 .progress-container { position:relative; width:100%; height:8px; background: linear-gradient(90deg, rgba(0,255,136,0.08), rgba(0,255,255,0.04)); border-radius:999px; overflow:hidden; box-shadow: inset 0 1px 3px rgba(0,255,136,0.03), 0 0 2px rgba(0,255,255,0.02); border:1px solid rgba(0,255,136,0.2); }
 .progress-track { position:absolute; inset:0; background: linear-gradient(90deg, rgba(37,99,235,0.04), rgba(6,182,212,0.03)); border-radius:999px; }

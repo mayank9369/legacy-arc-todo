@@ -102,9 +102,11 @@ function initTodos(){
   const taskCount = document.getElementById('taskCount');
   const progressBar = document.getElementById('progressBar');
   const quoteEl = document.getElementById('quote');
+  const appTitle = document.getElementById('appTitle');
 
   // load saved title
   listTitle.value = state.title || '';
+  if (appTitle) appTitle.textContent = state.title || 'Legacy Arc';
 
   function render(){
     // clear list and only show tasks created for today (daily tasks reset at midnight)
@@ -276,6 +278,57 @@ function initTodos(){
   // theme toggle
   const themeBtn = document.getElementById('themeToggle');
   if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+
+  // Make app title editable - click to edit
+  function setupAppTitleEditor() {
+    const appTitle = document.getElementById('appTitle');
+    if (!appTitle) return;
+    
+    appTitle.addEventListener('click', () => {
+      const currentTitle = state.title || 'Legacy Arc';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentTitle;
+      input.className = 'app-title-edit';
+      input.style.cssText = 'font-size: 1.2rem; letter-spacing: 0.6px; padding: 6px 10px; border: 2px solid #00ffff; border-radius: 8px; background: rgba(0,255,136,0.1); color: white; font-weight: inherit; font-family: inherit;';
+      
+      appTitle.replaceWith(input);
+      input.focus();
+      input.select();
+
+      const saveTitle = () => {
+        const newTitle = input.value.trim() || 'Legacy Arc';
+        state.title = newTitle;
+        saveState(state);
+        
+        const newTitle_elem = document.createElement('h1');
+        newTitle_elem.className = 'app-title';
+        newTitle_elem.id = 'appTitle';
+        newTitle_elem.title = 'Click to edit title';
+        newTitle_elem.textContent = newTitle;
+        input.replaceWith(newTitle_elem);
+        
+        listTitle.value = newTitle;
+        showToast('Title updated');
+        setupAppTitleEditor();
+      };
+
+      input.addEventListener('blur', saveTitle);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveTitle();
+        if (e.key === 'Escape') {
+          const restoredTitle = document.createElement('h1');
+          restoredTitle.className = 'app-title';
+          restoredTitle.id = 'appTitle';
+          restoredTitle.title = 'Click to edit title';
+          restoredTitle.textContent = state.title || 'Legacy Arc';
+          input.replaceWith(restoredTitle);
+          setupAppTitleEditor();
+        }
+      });
+    });
+  }
+  setupAppTitleEditor();
 
   // Apply theme from saved state
   applyTheme(state.theme || 'light');
